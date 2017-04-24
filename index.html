@@ -1,0 +1,299 @@
+<html ng-app="myApp">
+  <head>
+
+  <link href="./BAUDMETER_files/css/modern.css" rel="stylesheet">
+  <link href="./BAUDMETER_files/css/modern-responsive.css" rel="stylesheet">
+  <script src="./BAUDMETER_files/jquery-1.11.1.min.js"></script>
+  <script src="./BAUDMETER_files/jquery-1.11.1.min.js"></script>
+  <script src="./BAUDMETER_files/dropdown.js"></script>
+  <script src="./BAUDMETER_files/common.js"></script>
+
+    <!-- Include 3rd party libraries -->
+    <script src="bower_components/d3/d3.js" charset="UTF-8"></script>
+    <script src="bower_components/angular/angular.js" charset="UTF-8"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/topojson/topojson.js" charset="UTF-8"></script>
+
+
+
+    <!-- Include the application files -->
+    <script src="src/app.js"></script>
+    <link href="src/app.css" rel="stylesheet">
+
+    <!-- Include the files of the chart component -->
+    <script src="src/services/eventService.js"></script>
+    <script src="src/services/latencyDataService.js"></script>
+    <script src="src/controller/latencyController.js"></script>
+    <script src="src/controller/coLatencyViewCtrl.js"></script>
+    <script src="src/controller/currentLatencySelectionCtrl.js"></script>
+    <script src="src/controller/provinceLatencyViewController.js"></script>
+    <script src="src/controller/trafficContributionViewController.js"></script>
+    <script src="src/controller/trafficLatencyChartViewController.js"></script>
+    <script src="src/controller/trafficErrorRateChartViewController.js"></script>
+    <script src="src/controller/traceRouteController.js"></script>
+    <script src="src/controller/chinaTraceRouteViewController.js"></script>
+    <script src="src/controller/traceQueryController.js"></script>
+    <script src="src/controller/statisticController.js"></script>
+
+    <script src="src/views/provinceLatencyView.js"></script>
+    <script src="src/views/chinaTraceRouteView.js"></script>
+    <script src="src/views/trafficContributionView.js"></script>
+    <script src="src/views/trafficLatencyChartView.js"></script>
+    <script src="src/views/trafficErrorRateChartView.js"></script>
+
+    <!--  preloaded data of each Geolocation of GB1999: ChinaCountyGBZipLatLonArray -->
+    <script src="src/data/ChinaCityCountyCodes.js" charset="UTF-8" ></script>
+        
+    <!--  preload data: china map into: topoChinaMap; -->
+    <script src="src/data/ChinaMapJs.js" charset="UTF-8" ></script>
+
+    <script type="text/javascript" >
+
+        /* INPUT PARAMETER, a function to return color for gb1999, which is value to be shown map for county*/
+        function GetCountyColor( gb1999OfCounty )
+        {
+          var colors  = ['#8ef','#fe8','#b8e','#8eb','#be8','#fbc','#cbf','#d8e','#e8d','#de8'];
+          return colors[Math.floor(gb1999OfCounty/100%11)];
+        }
+
+        /* INPUT PARAMETER, a function for color/size of circle of each site(aco), with GB1999 precaculated. */        
+        function SetSiteCircleSizeAndColor(site) {
+            //var code = site.GB1999;
+            //var colorscale = d3.scale.linear().domain([0, 7000, 8000]).range(["green", "yellow", "red"]);
+            site.color = 'green'; // colorscale(code % 7 * 1000);
+            site.radius = 0.3; // (code % 11) * 0.3;
+        }
+
+        // MOCK IMPLAEMENTATION VALUE FOR ROUTES:
+        var routeTraceMock={};
+
+        /* INPUT PARAMETER, a function to return a trace result of a site with gb1999 precalculated. */
+        function GetRouteTrace(acoDetail, targetHost) {   
+            return GetRouteTraceMock(acoDetail, targetHost);
+        }        
+
+        function GetRouteTraceMock(siteDetail, targetHost) {
+            // THIS IS A MOCK IMPL
+            // this is an implementation on how this data is obtained.
+            // { "origin" : "320100", "destination" : [ "350100"] , "value" : [ 853 ] },
+            var key = 'GB' + siteDetail.gb1999;
+            if (routeTraceMock[key]) {
+                return routeTraceMock[key];
+            }
+            var res = [];
+            // source shall have its own lat lon location
+            var loc = siteDetail.location;
+            if(!loc) {
+                var sitegb1999 = FindMatchingGB1999Site(siteDetail.gb1999);
+                loc = sitegb1999.location;
+            }
+            var nx = null;
+            var xnorth = [371500 , 410500, 130128, 130323, 110114, 220622, 231084 ];
+            var xsouth = [341700 , 360400, 350424, 445200, 440881, 450922, 451400 ];
+            var xwest  = [341182 , 411625, 440233, 511529, 610629, 610821, 652927 ];
+            var xpaths = [ xnorth, xsouth, xwest ];
+            for (var ipath=0; ipath<2; ipath++) { 
+                var stepi=1;
+                var iinst = {"source": 'GB' + siteDetail.gb1999, "target": null, "value": null, "start": true, "end": false, step: 1 };
+                if(loc) { // compute lat lon for start.
+                    iinst.location = [loc[0], loc[1]];
+                }
+                for (var iix = 0; iix < 7; iix++) {
+                    var rb = Math.floor(Math.random()*5);
+                    var isEndLeg = (iix==6);
+                    if(rb>1) {
+                        gbpathx = xpaths[ ipath ] [iix];
+                        var gbx = FindMatchingGB1999Site(gbpathx);
+                        if(!gbx) {
+                            alert(gbpathx);
+                        }
+                        var randlatency = Math.floor((Math.random() * 100) + 1);//
+                        iinst.target = 'GB' + gbx.GB1999;
+                        iinst.value = randlatency;
+                        iinst.end = isEndLeg;
+                        iinst.step = stepi;
+                        res.push(iinst); // push in trace step of leg
+                        stepi= isEndLeg? 1: stepi+1;
+                        // create new leg which starts either from CO from siteDetail or, continue from the target.
+                        nx = isEndLeg ? key : iinst.target;                
+                        iinst = {"source": nx, "target": null, "value": null, "start": isEndLeg, "end": false, step: 1 };                    
+                    }
+                }
+                iinst.end=true;
+            }
+            routeTraceMock[key] = res;
+            return res;
+        }
+        
+        function MockCOSites()
+        {
+            var sites =[];
+            for(var xi in ChinaCountyGBZipLatLonArray){
+                var si = ChinaCountyGBZipLatLonArray[xi];
+                if(si.PROVINCE!=320000) continue;
+                var randxsites = Math.floor((Math.random() * 10) + 1);//
+                for(var ii =0; ii<randxsites; ii++) {
+                    var randx = Math.floor((Math.random() * 10) -5)*0.02;//
+                    var randy = Math.floor((Math.random() * 10) -5)*0.02;//
+                    var st = { 
+                        LON: si.LON+randx , LAT: si.LAT+randy, 
+                        FULLNAME: si.FULLNAME+ii, 
+                        SUBAREA: si.SUBAREA, 
+                        AREA: si.AREA,
+                        GB1999: si.GB1999,
+                        ZHCITY: si.ZHCITY};
+                    st.siteid = si.GB1999+'_'+ii;
+                    sites.push(st);
+                }
+            }
+            return sites;
+        }
+        
+        /* #################################################################### */
+        /* THIS IS UTILITY FOR CALCULATING CENTER OFFICIAL LOCATIONS FOR GB1999 */
+        /*UTILITIES*/
+        function ShowToolTip(htmlContent) {
+            var tooltip = d3.select(".tooltip");
+            tooltip.transition()
+                    .duration(500)
+                    .style("opacity", .9);
+            tooltip.html(htmlContent)
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+        }
+
+        function HideToolTip() {
+            var el = d3.select('.tooltip');
+            var opx = el.style('opacity');
+            el.transition()
+                    .duration(600)
+                    .style("opacity",0.0 );
+        }
+
+        function ToggleDiv(selector) {
+            var el = d3.select(selector);
+            var opx = el.style('display');
+            el.transition()
+                .duration(600)
+                .style("display", opx=='none'? 'inline': 'none' );
+        }
+
+        var activeProvince=0;
+        var active_county=null;
+
+        /* THIS IS UTILITY FOR CALCULATING CENTER OFFICIAL LOCATIONS FOR GB1999 */
+        var chinaCountyCityDetail ={};
+        var co_sites = [];
+
+        function LoadGB1999CountyCenter(sites, projection) {
+          sites = sites.forEach(function(site) {
+            var location = [ site.LON ||site.longitude, site.LAT ||site.latitude];
+            site.location = location; // wrap in geo location
+            var pr =  projection(site.location);
+            site.cx = pr[0];
+            site.cy = pr[1];
+            if(!site.GB1999) { // GB1999 should be computed before hand so that we know
+              // what it belongs to.
+              site.GB1999 = site.COUNTY|| site.ZHCITY || site.PROVINCE;
+            }
+            // create a map of geo locations;
+            chinaCountyCityDetail["GB"+site.GB1999]=site;            
+          });
+          co_sites= MockCOSites();
+        };
+
+        // FUNCTION TO compute the path location on the map:
+        var arc = d3.geo.greatArc()
+                .source(function(d) {
+                  return d.location || chinaCountyCityDetail[d.source].location;
+                })
+                .target(function(d) {
+                  return chinaCountyCityDetail[d.target].location;
+                });
+
+        // with the official GB1999 and location, we can map any gb1999 to lat lon;
+        function FindMatchingGB1999Site(gb1999, nullallowed) {
+            var s = "GB" + gb1999;
+            var res = chinaCountyCityDetail[s];
+            if (!res && !nullallowed) {
+                res = FindMatchingGB1999Site(Math.floor(gb1999 / 100.0) * 100, true);
+            }
+            return res;
+        }
+
+        
+
+    </script>
+
+  </head>
+  <body>
+
+  <div class="page secondary fixed-header">
+      <div class="page-header ">
+          <div class="page">
+              <div class="nav-bar">
+                  <div class="nav-bar-inner padding10">
+                      <span class="pull-menu"></span>
+
+                      <span class="element brand">
+                        <a href="#/latency"><img class="place-left" src="./BAUDMETER_files/BaudMeter.png" style="height: 24px"></a>
+                      </span>
+
+                      <div class="divider"></div>
+
+                      <ul class="menu">
+                          <!--<li data-role="dropdown">
+                              <a href="#">Central Office</a>
+                              <ul class="dropdown-menu">
+                                  <li><a href="#/latency">List</a></li>
+                              </ul>
+                          </li>-->
+                          <li data-role="dropdown">
+                              <a href="#latency">Latency</a>
+                              <!--<ul class="dropdown-menu">
+                                  <li><a href="#/latency">Latency Average</a></li>
+                                  <li><a href="#/latency">Latency 75%</a></li>
+                                  <li><a href="#/latency">Latency 90%</a></li>
+                                  <li><a href="#/latency">Latency 99%</a></li>
+                                  <li><a href="#/statistic">Statistic</a></li>
+                              </ul>-->
+                          </li>
+                          <li data-role="dropdown">
+                              <a href="#trace">Trace Routes</a>
+                              <!--<ul class="dropdown-menu">
+                                  <li><a href="#/trace">Step Latency</a></li>
+                                  <li class="divider"></li>
+                                  <li><a href="#/trace">Hop Count</a></li>
+                              </ul>-->
+                          </li>
+                          <li data-role="dropdown">
+                              <a href="#statistic">Statistic</a>
+                          </li>
+                          <!--<li data-role="dropdown">
+                              <a href="#">Settings</a>
+                              <ul class="dropdown-menu">
+                                  <li><a href="javascript:ToggleDiv('.select-form')">Toggle Site Form Window</a></li>
+                                  <li><a href="javascript:ToggleDiv('.top-site')">Toggle Top Site Window</a></li>
+                              </ul>
+                          </li>
+                          -->
+                      </ul>
+                      
+                      <!-- div class="divider"></div>
+                        <span id="feedbackLink" class="element brand place-right" style="cursor:pointer" onclick="feedbackClicked()" title="Click to provide feedback">
+                            Feedback
+                        </span -->
+                  </div>
+              </div>
+          </div><!-- div page -->
+      </div><!-- page-header -->
+      <div class="page-region" style="background-color:white">
+          <!-- iframe name="BaudMeterWebFrame" id="BaudMeterWebFrame" style="border: 0px; margin: 0px; padding: 0px; height: 760px; width: 1705px;" src="./BAUDMETER_files/Show.html"></iframe -->
+          <div class="tooltip" style="opacity: 0; left: 504px; top: 810px;"></div>
+          <div id="mainview" ng-view>
+          </div>
+      </div>
+  </div>
+
+  </body>
+</html>

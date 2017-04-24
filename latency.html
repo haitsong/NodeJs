@@ -1,0 +1,195 @@
+<style>
+    .selection {
+        background-color:black;
+        color:white;
+        text-align:center;
+        padding:5px;
+    }
+    .latencyMap {
+        height:800px;
+        width:700px;
+        float:left;
+        padding:5px;
+    }
+    .side {
+        width:350px;
+        float:left;
+        text-align:center;
+        padding:10px;
+    }
+    .lineChart {
+        clear:both;
+        text-align:center;
+        padding:5px;
+    }
+
+    .height_divider{
+        width:auto;
+        height:7px;
+        display:inline-block;
+    }
+
+    #trafficContributionView path {
+        stroke: white;
+        stroke-width: 2;
+    }
+
+    #trafficContributionView #nicktool {
+        font-size: 1.1em;
+    }
+
+    #trafficContributionView #nicktool rect {
+        fill: white;
+    }
+
+    .lineChart .axis path, .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .lineChart .axis text {
+        font: 10px sans-serif;
+    }
+
+    .lineChart .axis .grid-line{
+        stroke: black;
+        shape-rendering: crispEdges;
+        stroke-opacity: .2;
+    }
+
+    .lineChart .line{
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 2;
+    }
+
+    .lineChart .dot {
+        fill: #fff;
+        stroke: steelblue;
+    }
+
+    .lineChart .area {
+        stroke: none;
+        fill: steelblue;
+        fill-opacity: .2;
+    }
+
+    .lineChart .pie text{
+        fill: white;
+        font-weight: bold;
+    }
+
+    .lineChart .circle {
+        stroke: none;
+        fill: red;
+        fill-opacity: .7;
+    }
+
+    .co_normal {
+        border-radius: 5px;
+        background: #8AC007;
+        padding: 5px;
+        width: 65px;
+        height: 50px;
+        margin-left: 10px;
+        margin-bottom: 10px;
+    }
+
+    .co_mouseover {
+        border-radius: 5px;
+        background: #e5f018;
+        padding: 5px;
+        width: 65px;
+        height: 50px;
+        margin-left: 10px;
+        margin-bottom: 10px;
+    }
+
+    .co_click {
+        border-radius: 5px;
+        padding: 5px;
+        width: 65px;
+        height: 50px;
+        margin-left: 10px;
+        margin-bottom: 10px;
+        border-style: solid;
+        border-color: #11f2eb;
+    }
+
+    #TrafficLatencyChartView1 {
+        width: 98%;
+        height: 400px;
+        margin: auto;
+        /*margin: 5px;*/
+        border-radius: 25px;
+        border: 2px solid #ccc;
+        padding: 5px;
+        background-color: #f5f5f5;
+    }
+
+    #ErrorRateChartView1{
+        width: 98%;
+        height: 400px;
+        margin: auto;
+        /*margin: 5px;*/
+        border-radius: 25px;
+        border: 2px solid #ccc;
+        padding: 5px;
+        background-color: #f5f5f5;
+    }
+
+    .percentileSelector_mouseover{
+        stroke:#999696;
+        stroke-width:3;
+        stroke-dasharray:0;
+    }
+
+    .percentileSelector_click{
+        stroke:#999696;
+        stroke-width:3;
+        stroke-dasharray:0;
+    }
+</style>
+<!--
+<div ng-controller="CurrentLatencySelectionCtrl" class="selection">
+    <pre>Current Selected County is <span ng-bind="countyGB"></span>, current selected Co is  <span ng-bind="coId"></span></pre>
+</div>
+-->
+
+
+<div ng-controller="ProvinceLatencyViewCtrl" class="latencyMap">
+    <h2 align="center"> Jiang Su Network Latency Overview</h2>
+    <m-Province-Latency-View latency="latency" county-Map="countyMap"></m-Province-Latency-View>
+</div>
+<div ng-controller="CoLatencyViewCtrl" class="side">
+    <h2>central offices</h2>
+
+    <div ng-repeat="co in coInfo[coListIndex]" id="co_{{$index}}"
+         ng-class="{'co_normal': mouse_leave, 'co_mouseover': mouse_over, 'co_click' : co.Id == currentSelectCo}"
+         ng-mouseleave="mouse_leave=true; mouse_over=false;"
+         ng-mouseover="mouse_leave=false; mouse_over=true;"
+         ng-click="pickCo(co);"
+         class="co_normal"
+         style="float: left">
+        <b>{{co.Id}}</b> <br> {{co.Latency50}}ms
+    </div>
+</div>
+<div ng-controller="TrafficContributionViewCtrl" class="side" id ="trafficContributionView">
+    <h2 align="center"> Top 10 visit sites </h2>
+    <m-traffic-Contribution-View></m-Traffic-Contribution-View>
+</div>
+
+<div class="lineChart" id="TrafficLatencyChartView1" ng-controller="TrafficLatencyChartViewCtrl">
+    <h3 align="center" id="TrafficLatencyChartView1_header"> Traffic latency of top 5 sites</h3>
+    <m-traffic-Latency-Chart></m-traffic-Latency-Chart>
+</div>
+
+<div class="height_divider"></div>
+<!---->
+<div class="lineChart" id="ErrorRateChartView1" ng-controller="TrafficErrorRateChartViewCtrl">
+    <h3 align="center" id="ErrorRateChartView1_header"> Error rate of top 5 sites</h3>
+    <m-traffic-error-rate-chart-view></m-traffic-error-rate-chart-view>
+</div>
+<!---->
+<div class="height_divider"></div>
