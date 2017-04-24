@@ -10,7 +10,7 @@ angular.module('d3Charts')
              2. pass event to another view.
              */
 
-            $scope.latency = "src/data/jiangsu_county_latency.csv";
-            $scope.countyMap = "src/data/JiangSuCounty.json";
+            $scope.latency = "data/jiangsu_county_latency.csv";
+            $scope.countyMap = "data/JiangSuCounty.json";
 
         }]);
