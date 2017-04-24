@@ -1,0 +1,134 @@
+.county-boundary {
+    fill: none;
+    stroke: #777;
+    stroke-width: 2;
+    stroke-dasharray: 2,2;
+    stroke-linejoin: round;
+}
+
+.place,
+.place-label {
+    fill: #444;
+}
+
+.mouse_over_county{
+    stroke:#FFFF00;
+    stroke-width:4;
+    stroke-dasharray:0;
+}
+
+.active_county {
+    stroke:#FF00FF;
+    stroke-width:4;
+    stroke-dasharray:0;
+}
+
+.inactive_county {
+    stroke:#777;
+    stroke-width:2;
+    stroke-dasharray:2,2;
+}
+
+div.active-selection {
+    /*position: absolute;*/
+    height: auto;
+    padding: 5px;
+    background-color: white;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none; /* MUI IMPORTANTE! */
+    font-family: sans-serif;
+    font-size:10px;
+}
+
+.cellstart_true
+{
+    background-color: lightgreen;
+}
+
+.cellend_true
+{
+    background-color: bisque;
+}
+
+div.select-form {
+    /*display: inline-block;
+    left:800px;
+    top:120px;*/
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+div.top-site {
+    /*display: inline-block;
+    left:800px;
+    top:380px;*/
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+div.site-trace {
+    /*display: inline-block;
+    left:800px;
+    top:580px;*/
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+div.tooltip {
+    position: absolute;
+    max-width: 200px;
+    height: auto;
+    padding: 5px;
+    background-color: white;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none; /* MUI IMPORTANTE! */
+    font-family: sans-serif;
+    font-size:12px;
+}
+
+.county-line
+{
+    fill:  Azure;
+    fill-opacity: 0.6;
+    stroke: #ab3;
+    stroke-dasharray: 1,2;
+    stroke-linejoin: round;
+}
+
+.province-line
+{
+    fill: #eeffff;
+    fill-opacity: 0.1;
+    stroke: #7a9;
+    pointer-events: all;
+}
+
+.city-circle
+{
+    fill: none;
+    fill-opacity: 0.6;
+    stroke: #a97;
+    pointer-events: all;
+}
+
+.mouseover-county-line{
+    stroke:#38F;
+    stroke-dasharray:0;
+}
+
+.active-county-line {
+    stroke:#F0F;
+    stroke-dasharray:0;
+}
+
+.inactive-county-line {
+    stroke:#777;
+    stroke-dasharray:2,2;
+}
